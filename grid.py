@@ -11,7 +11,6 @@ def get_image_tags(directory):
         
     files = sorted([f for f in os.listdir(directory) if f.lower().endswith('.png')])
     
-    # Process character list directly
     if directory == CHAR_DIR:
         tags = []
         for f in files:
@@ -19,13 +18,11 @@ def get_image_tags(directory):
             tags.append(f'<img src="{directory}/{f}" width="{IMAGE_WIDTH}" title="{name}" alt="{name}" style="display:inline-block; margin:0; padding:0; border:0; vertical-align:middle;"/>')
         return "".join(tags)
 
-    # Automatically group weapons by type keyword in file name
     categories = {"Broadblade": [], "Sword": [], "Pistol": [], "Gauntlets": [], "Rectifier": [], "Other": []}
     for f in files:
         name = os.path.splitext(f)[0].replace("-", " ").replace("_", " ").title()
         tag = f'<img src="{directory}/{f}" width="{IMAGE_WIDTH}" title="{name}" alt="{name}" style="display:inline-block; margin:0; padding:0; border:0; vertical-align:middle;"/>'
         
-        # Match type logic
         lower_name = f.lower()
         if "broad" in lower_name:
             categories["Broadblade"].append(tag)
@@ -60,12 +57,10 @@ def main():
     before_grid = content.split(start_tag)[0]
     after_grid = content.split(end_tag)[1]
     
-    # Generate content streams
     char_html = get_image_tags(CHAR_DIR)
     weapon_groups = get_image_tags(WEAPON_DIR)
     
-    # Build complete layout string
-    layout_lines = ["## Characters", "---", char_html, "\n## Weapons", "---"]
+    layout_lines = ["## Characters", char_html, "\n## Weapons"]
     for category_name, weapon_html in weapon_groups.items():
         layout_lines.append(f"### {category_name}\n{weapon_html}")
         
