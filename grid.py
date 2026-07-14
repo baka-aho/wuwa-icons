@@ -5,6 +5,8 @@ README_FILE = "README.md"
 IMAGES_PER_ROW = 4
 IMAGE_WIDTH = 100
 
+
+## eee
 def make_icon_wall():
     if not os.path.exists(IMAGE_DIR):
         print(f"Error: {IMAGE_DIR} folder not found.")
