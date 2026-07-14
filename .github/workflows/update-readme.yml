@@ -1,9 +1,10 @@
-name: update character grid
+name: Auto Update Character Grid
 
 on:
   push:
     paths:
       - 'characters/**'
+  workflow_dispatch: # <--- This line adds the manual button!
 
 permissions:
   contents: write
