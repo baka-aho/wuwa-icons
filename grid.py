@@ -1,35 +1,46 @@
 import os
 
-IMAGE_DIR = "characters"
+CHAR_DIR = "characters"
+WEAPON_DIR = "weapons"
 README_FILE = "README.md"
-IMAGES_PER_ROW = 4
 IMAGE_WIDTH = 100
 
-
-## eee
-def make_icon_wall():
-    if not os.path.exists(IMAGE_DIR):
-        print(f"Error: {IMAGE_DIR} folder not found.")
-        return ""
+def get_image_tags(directory):
+    if not os.path.exists(directory):
+        return {} if directory == WEAPON_DIR else []
         
-    images = sorted([f for f in os.listdir(IMAGE_DIR) if f.lower().endswith('.png')])
-    if not images:
-        return "No characters found."
-
-    html_output = []
+    files = sorted([f for f in os.listdir(directory) if f.lower().endswith('.png')])
     
-    for idx, filename in enumerate(images):
-        name = os.path.splitext(filename)[0].replace("-", " ").replace("_", " ").title()
+    # Process character list directly
+    if directory == CHAR_DIR:
+        tags = []
+        for f in files:
+            name = os.path.splitext(f)[0].replace("-", " ").replace("_", " ").title()
+            tags.append(f'<img src="{directory}/{f}" width="{IMAGE_WIDTH}" title="{name}" alt="{name}" style="display:inline-block; margin:0; padding:0; border:0; vertical-align:middle;"/>')
+        return "".join(tags)
+
+    # Automatically group weapons by type keyword in file name
+    categories = {"Broadblade": [], "Sword": [], "Pistol": [], "Gauntlets": [], "Rectifier": [], "Other": []}
+    for f in files:
+        name = os.path.splitext(f)[0].replace("-", " ").replace("_", " ").title()
+        tag = f'<img src="{directory}/{f}" width="{IMAGE_WIDTH}" title="{name}" alt="{name}" style="display:inline-block; margin:0; padding:0; border:0; vertical-align:middle;"/>'
         
-        # Build seamless zero-space tag
-        tag = f'<img src="{IMAGE_DIR}/{filename}" width="{IMAGE_WIDTH}" title="{name}" alt="{name}" style="display:inline-block; margin:0; padding:0; border:0; vertical-align:middle;"/>'
-        html_output.append(tag)
-        
-        # Break line every 4 items
-        if (idx + 1) % IMAGES_PER_ROW == 0 and (idx + 1) < len(images):
-            html_output.append("<br>")
+        # Match type logic
+        lower_name = f.lower()
+        if "broad" in lower_name:
+            categories["Broadblade"].append(tag)
+        elif "sword" in lower_name or "blade" in lower_name:
+            categories["Sword"].append(tag)
+        elif "pistol" in lower_name or "gun" in lower_name:
+            categories["Pistol"].append(tag)
+        elif "gauntlet" in lower_name or "glove" in lower_name:
+            categories["Gauntlets"].append(tag)
+        elif "rectifier" in lower_name:
+            categories["Rectifier"].append(tag)
+        else:
+            categories["Other"].append(tag)
             
-    return "".join(html_output)
+    return {k: "".join(v) for k, v in categories.items() if v}
 
 def main():
     if not os.path.exists(README_FILE):
@@ -49,13 +60,22 @@ def main():
     before_grid = content.split(start_tag)[0]
     after_grid = content.split(end_tag)[1]
     
-    grid_html = make_icon_wall()
-    new_readme = f"{before_grid}{start_tag}\n{grid_html}\n{end_tag}{after_grid}"
+    # Generate content streams
+    char_html = get_image_tags(CHAR_DIR)
+    weapon_groups = get_image_tags(WEAPON_DIR)
+    
+    # Build complete layout string
+    layout_lines = ["## Characters", "---", char_html, "\n## Weapons", "---"]
+    for category_name, weapon_html in weapon_groups.items():
+        layout_lines.append(f"### {category_name}\n{weapon_html}")
+        
+    layout = "\n".join(layout_lines)
+    new_readme = f"{before_grid}{start_tag}\n{layout}\n{end_tag}{after_grid}"
     
     with open(README_FILE, "w", encoding="utf-8") as f:
         f.write(new_readme)
         
-    print("README updated successfully.")
+    print("README layouts populated successfully.")
 
 if __name__ == "__main__":
     main()
